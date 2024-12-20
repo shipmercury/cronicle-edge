@@ -57,6 +57,10 @@ Class.subclass( Page.Base, "Page.Login", {
 				html += '<td><div class="button" style="width:120px; font-weight:normal;" onMouseUp="$P().navPasswordRecovery()">Forgot Password...</div></td>';
 				html += '<td width="20">&nbsp;</td>';
 				html += '<td><div class="button" style="width:120px;" onMouseUp="$P().doLogin()"><i class="fa fa-sign-in">&nbsp;&nbsp;</i>Login</div></td>';
+				if (config.oauth) {
+					html += '<td width="20">&nbsp;</td>';
+					html += '<td><div class="button" style="width:120px;" onMouseUp="$P().doOauth()"><i class="fa fa-sign-in">&nbsp;&nbsp;</i>SSO</div></td>';
+				}
 			html += '</tr></table></center></div>';
 		html += '</div>';
 		
@@ -75,42 +79,24 @@ Class.subclass( Page.Base, "Page.Login", {
 			} ); 
 			
 		}, 1 );
-		
+
 		return true;
 	},
-	
-	/*doLoginFormSubmit: function() {
-		// force login form to submit
-		$('#f_login')[0].submit();
-	},
-	
-	doFrameLogin: function(resp) {
-		// login from IFRAME redirect
-		// alert("GOT HERE FROM IFRAME " + JSON.stringify(resp));
-		this.tempFrameResp = JSON.parse( JSON.stringify(resp) );
-		setTimeout( '$P().doFrameLogin2()', 1 );
-	},
-	
-	doFrameLogin2: function() {
-		// login from IFRAME redirect
-		var resp = this.tempFrameResp;
-		delete this.tempFrameResp;
-		
-		Debug.trace("IFRAME Response: " + JSON.stringify(resp));
-		
-		if (resp.code) {
-			return app.doError( resp.description );
+
+	doOauth: function() {
+
+		if(localStorage.session_id) { 
+			// user might be logged aleready in differnt tab, then just refresh the page
+			Nav.go(app.navAfterLogin || config.DefaultPage)
 		}
-		
-		Debug.trace("IFRAME User Login: " + resp.username + ": " + resp.session_id);
-		
-		app.clearError();
-		app.hideProgress();
-		app.doUserLogin( resp );
-		
-		Nav.go( app.navAfterLogin || config.DefaultPage );
-		// alert("GOT HERE: " + (app.navAfterLogin || config.DefaultPage) );
-	},*/
+		else {
+			// redirect to oauth login page
+			let orig_location = encodeURIComponent(app.navAfterLogin || config.DefaultPage);
+			window.location.href = `/api/user/oauth?orig_location=${orig_location}`;		
+		}
+
+	},
+
 	
 	 doLogin: function() {
 		// attempt to log user in
